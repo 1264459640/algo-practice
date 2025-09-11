@@ -28,6 +28,34 @@
             "env": {
                 "DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION": "true"
             }
+        },
+        {
+            "name": "调试二分查找",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/BinarySearch/bin/Debug/net9.0/BinarySearch.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/BinarySearch",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION": "true"
+            }
+        },
+        {
+            "name": "调试二分查找 (外部终端)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/BinarySearch/bin/Debug/net9.0/BinarySearch.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/BinarySearch",
+            "console": "externalTerminal",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION": "true"
+            }
         }
     ]
 }
