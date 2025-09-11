@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "调试冒泡排序",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/BubbleSort/bin/Debug/net9.0/BubbleSort.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/BubbleSort",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION": "true"
+            }
+        },
+        {
+            "name": "调试冒泡排序 (外部终端)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/BubbleSort/bin/Debug/net9.0/BubbleSort.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/BubbleSort",
+            "console": "externalTerminal",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION": "true"
+            }
+        }
+    ]
+}
