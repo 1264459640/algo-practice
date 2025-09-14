@@ -1,0 +1,119 @@
+[gd_scene load_steps=2 format=3 uid="uid://bq8xkxqhqvhxk"]
+
+[ext_resource type="Script" path="res://src/DFSTestScene.cs" id="1_0k8vj"]
+
+[node name="DFSTestScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0k8vj")
+
+[node name="MainContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="MainContainer"]
+layout_mode = 2
+text = "深度优先搜索 (DFS) 算法演示"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+
+[node name="ButtonContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CreateGraphButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "创建随机图"
+
+[node name="DFSTraversalButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "DFS遍历"
+
+[node name="FindPathButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "查找路径"
+
+[node name="DetectCycleButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "检测环"
+
+[node name="SolveMazeButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "求解迷宫"
+
+[node name="ResetButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "重置"
+
+[node name="ContentContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="LeftPanel" type="VBoxContainer" parent="MainContainer/ContentContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="GraphLabel" type="Label" parent="MainContainer/ContentContainer/LeftPanel"]
+layout_mode = 2
+text = "图结构信息:"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="GraphDisplay" type="RichTextLabel" parent="MainContainer/ContentContainer/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "图信息将在这里显示..."
+
+[node name="MazeLabel" type="Label" parent="MainContainer/ContentContainer/LeftPanel"]
+layout_mode = 2
+text = "迷宫 (5x5):"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="MazeGrid" type="GridContainer" parent="MainContainer/ContentContainer/LeftPanel"]
+layout_mode = 2
+theme_override_constants/h_separation = 2
+theme_override_constants/v_separation = 2
+columns = 5
+
+[node name="RightPanel" type="VBoxContainer" parent="MainContainer/ContentContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ResultLabel" type="Label" parent="MainContainer/ContentContainer/RightPanel"]
+layout_mode = 2
+text = "算法执行结果:"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="ResultDisplay" type="RichTextLabel" parent="MainContainer/ContentContainer/RightPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "结果将在这里显示..."
+
+[node name="HelpLabel" type="Label" parent="MainContainer"]
+layout_mode = 2
+text = "快捷键: 1-创建图 | 2-DFS遍历 | 3-查找路径 | 4-检测环 | 5-求解迷宫 | R-重置 | ESC-退出"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 12
