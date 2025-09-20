@@ -27,7 +27,7 @@ public partial class DFSTestScene : Control
     private GridContainer _mazeGrid;
     
     // 数据
-    private DepthFirstSearch.Graph _currentGraph;
+    private Graph _currentGraph;
     private int[,] _maze;
     private readonly Random _random = new Random();
     
@@ -54,9 +54,9 @@ public partial class DFSTestScene : Control
         _detectCycleButton = GetNode<Button>("MainContainer/ButtonContainer/DetectCycleButton");
         _solveMazeButton = GetNode<Button>("MainContainer/ButtonContainer/SolveMazeButton");
         _resetButton = GetNode<Button>("MainContainer/ButtonContainer/ResetButton");
-        _graphDisplay = GetNode<RichTextLabel>("MainContainer/GraphDisplay");
-        _resultDisplay = GetNode<RichTextLabel>("MainContainer/ResultDisplay");
-        _mazeGrid = GetNode<GridContainer>("MainContainer/MazeGrid");
+        _graphDisplay = GetNode<RichTextLabel>("MainContainer/ContentContainer/LeftPanel/GraphDisplay");
+        _resultDisplay = GetNode<RichTextLabel>("MainContainer/ContentContainer/RightPanel/ResultDisplay");
+        _mazeGrid = GetNode<GridContainer>("MainContainer/ContentContainer/LeftPanel/MazeGrid");
     }
     
     /// <summary>
@@ -96,7 +96,7 @@ public partial class DFSTestScene : Control
     /// </summary>
     private void CreateSampleGraph()
     {
-        _currentGraph = new DepthFirstSearch.Graph(false); // 无向图
+        _currentGraph = new Graph(false); // 无向图
         
         // 添加顶点和边创建一个示例图
         _currentGraph.AddEdge(0, 1);
@@ -189,7 +189,7 @@ public partial class DFSTestScene : Control
     private void OnCreateGraphPressed()
     {
         // 创建一个随机图
-        _currentGraph = new DepthFirstSearch.Graph(false);
+        _currentGraph = new Graph(false);
         
         int vertexCount = _random.Next(5, 10);
         int edgeCount = _random.Next(vertexCount - 1, vertexCount * 2);

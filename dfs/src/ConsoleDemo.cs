@@ -1,7 +1,8 @@
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DFS;
 
 namespace DFS
 {
@@ -69,7 +70,7 @@ namespace DFS
             Console.WriteLine();
             
             // 创建示例图
-            var graph = new DepthFirstSearch.Graph(false);
+            var graph = new Graph(false);
             graph.AddEdge(0, 1);
             graph.AddEdge(0, 2);
             graph.AddEdge(1, 3);
@@ -116,7 +117,7 @@ namespace DFS
             Console.WriteLine();
             
             // 创建更复杂的图
-            var graph = new DepthFirstSearch.Graph(false);
+            var graph = new Graph(false);
             graph.AddEdge(0, 1);
             graph.AddEdge(0, 2);
             graph.AddEdge(1, 3);
@@ -170,7 +171,7 @@ namespace DFS
             
             // 测试无环图
             Console.WriteLine("测试1: 无环无向图");
-            var acyclicGraph = new DepthFirstSearch.Graph(false);
+            var acyclicGraph = new Graph(false);
             acyclicGraph.AddEdge(0, 1);
             acyclicGraph.AddEdge(1, 2);
             acyclicGraph.AddEdge(2, 3);
@@ -183,7 +184,7 @@ namespace DFS
             
             // 测试有环图
             Console.WriteLine("测试2: 有环无向图");
-            var cyclicGraph = new DepthFirstSearch.Graph(false);
+            var cyclicGraph = new Graph(false);
             cyclicGraph.AddEdge(0, 1);
             cyclicGraph.AddEdge(1, 2);
             cyclicGraph.AddEdge(2, 3);
@@ -197,7 +198,7 @@ namespace DFS
             
             // 测试有向图环检测
             Console.WriteLine("测试3: 有向图环检测");
-            var directedGraph = new DepthFirstSearch.Graph(true);
+            var directedGraph = new Graph(true);
             directedGraph.AddEdge(0, 1);
             directedGraph.AddEdge(1, 2);
             directedGraph.AddEdge(2, 3);
@@ -229,7 +230,7 @@ namespace DFS
             Console.WriteLine();
             
             // 创建DAG (有向无环图)
-            var dag = new DepthFirstSearch.Graph(true);
+            var dag = new Graph(true);
             dag.AddEdge(5, 2);
             dag.AddEdge(5, 0);
             dag.AddEdge(4, 0);
@@ -260,7 +261,7 @@ namespace DFS
             
             // 测试有环的有向图
             Console.WriteLine("测试有环的有向图:");
-            var cyclicDAG = new DepthFirstSearch.Graph(true);
+            var cyclicDAG = new Graph(true);
             cyclicDAG.AddEdge(0, 1);
             cyclicDAG.AddEdge(1, 2);
             cyclicDAG.AddEdge(2, 0); // 形成环
@@ -359,7 +360,7 @@ namespace DFS
         /// <summary>
         /// 显示图结构
         /// </summary>
-        private static void DisplayGraph(DepthFirstSearch.Graph graph)
+        private static void DisplayGraph(Graph graph)
         {
             Console.WriteLine($"顶点数: {graph.VertexCount}, 边数: {graph.EdgeCount}");
             Console.WriteLine("邻接表:");

@@ -1,0 +1,113 @@
+[gd_scene load_steps=2 format=3 uid="uid://cqxvgsqunwhd"]
+
+[ext_resource type="Script" path="res://src/BFSTestScene.cs" id="1_0hdqv"]
+
+[node name="BFSTestScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_0hdqv")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "BFS 算法可视化演示"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ControlPanel" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="StartLabel" type="Label" parent="VBoxContainer/ControlPanel"]
+layout_mode = 2
+text = "起始顶点:"
+
+[node name="StartSpinBox" type="SpinBox" parent="VBoxContainer/ControlPanel"]
+layout_mode = 2
+max_value = 10.0
+
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/ControlPanel"]
+layout_mode = 2
+
+[node name="TargetLabel" type="Label" parent="VBoxContainer/ControlPanel"]
+layout_mode = 2
+text = "目标顶点:"
+
+[node name="TargetSpinBox" type="SpinBox" parent="VBoxContainer/ControlPanel"]
+layout_mode = 2
+max_value = 10.0
+value = 6.0
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonPanel" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="BFSButton" type="Button" parent="VBoxContainer/ButtonPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "BFS遍历 (1)"
+
+[node name="ShortestPathButton" type="Button" parent="VBoxContainer/ButtonPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "最短路径 (2)"
+
+[node name="BipartiteButton" type="Button" parent="VBoxContainer/ButtonPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "二分图检测 (3)"
+
+[node name="MazeButton" type="Button" parent="VBoxContainer/ButtonPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "迷宫求解 (4)"
+
+[node name="HSeparator3" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="GraphInfoLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "图结构信息:"
+
+[node name="GraphInfoText" type="RichTextLabel" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.3
+bbcode_enabled = true
+text = "[b]测试图结构:[/b]\n顶点: 0-8\n边: (0,1), (0,2), (1,3), (1,4), (2,5), (3,6), (4,6), (5,6), (7,8)\n\n[color=green]按数字键1-4或点击按钮开始演示[/color]"
+fit_content = true
+scroll_active = false
+
+[node name="HSeparator4" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ResultLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "结果显示区域:"
+
+[node name="ResultScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.7
+
+[node name="ResultText" type="RichTextLabel" parent="VBoxContainer/ResultScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[center][color=gray]点击按钮开始BFS算法演示...[/color][/center]\n\n[b]快捷键:[/b]\n• 数字键 1: BFS遍历\n• 数字键 2: 最短路径查找\n• 数字键 3: 二分图检测\n• 数字键 4: 迷宫求解\n• ESC: 退出程序"
+fit_content = true

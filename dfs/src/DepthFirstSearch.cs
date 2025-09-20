@@ -5,122 +5,44 @@ using System.Linq;
 namespace DFS
 {
     /// <summary>
-    /// 深度优先搜索算法实现类
-    /// 提供多种DFS变种和应用场景的实现
+    /// 深度优先搜索算法实现类。
+    /// 包含多种DFS变种和应用场景的静态方法实现。
     /// </summary>
     public static class DepthFirstSearch
     {
-        /// <summary>
-        /// 图的表示方式：邻接表
-        /// </summary>
-        public class Graph
-        {
-            private readonly Dictionary<int, List<int>> _adjacencyList;
-            private readonly bool _isDirected;
-            
-            public int VertexCount { get; private set; }
-            public int EdgeCount { get; private set; }
-            
-            public Graph(bool isDirected = false)
-            {
-                _adjacencyList = new Dictionary<int, List<int>>();
-                _isDirected = isDirected;
-                VertexCount = 0;
-                EdgeCount = 0;
-            }
-            
-            /// <summary>
-            /// 添加顶点
-            /// </summary>
-            public void AddVertex(int vertex)
-            {
-                if (!_adjacencyList.ContainsKey(vertex))
-                {
-                    _adjacencyList[vertex] = new List<int>();
-                    VertexCount++;
-                }
-            }
-            
-            /// <summary>
-            /// 添加边
-            /// </summary>
-            public void AddEdge(int from, int to)
-            {
-                AddVertex(from);
-                AddVertex(to);
-                
-                _adjacencyList[from].Add(to);
-                EdgeCount++;
-                
-                if (!_isDirected)
-                {
-                    _adjacencyList[to].Add(from);
-                }
-            }
-            
-            /// <summary>
-            /// 获取顶点的邻接顶点
-            /// </summary>
-            public IEnumerable<int> GetNeighbors(int vertex)
-            {
-                return _adjacencyList.ContainsKey(vertex) ? _adjacencyList[vertex] : Enumerable.Empty<int>();
-            }
-            
-            /// <summary>
-            /// 获取所有顶点
-            /// </summary>
-            public IEnumerable<int> GetVertices()
-            {
-                return _adjacencyList.Keys;
-            }
-            
-            /// <summary>
-            /// 检查顶点是否存在
-            /// </summary>
-            public bool ContainsVertex(int vertex)
-            {
-                return _adjacencyList.ContainsKey(vertex);
-            }
-        }
+
         
         /// <summary>
-        /// DFS遍历结果
+        /// 基本的DFS遍历（递归版本）。
+        /// 从给定的起始顶点开始遍历。
         /// </summary>
-        public class DFSResult
-        {
-            public List<int> VisitOrder { get; set; } = new List<int>();
-            public Dictionary<int, int> DiscoveryTime { get; set; } = new Dictionary<int, int>();
-            public Dictionary<int, int> FinishTime { get; set; } = new Dictionary<int, int>();
-            public Dictionary<int, int> Parent { get; set; } = new Dictionary<int, int>();
-            public List<List<int>> Paths { get; set; } = new List<List<int>>();
-            public int ComponentCount { get; set; } = 0;
-            public bool HasCycle { get; set; } = false;
-        }
-        
-        /// <summary>
-        /// 基本DFS遍历（递归版本）
-        /// </summary>
+        /// <param name="graph">要遍历的图。</param>
+        /// <param name="startVertex">遍历的起始顶点。</param>
+        /// <returns>DFS遍历的结果。</returns>
         public static DFSResult DFSRecursive(Graph graph, int startVertex)
         {
             var result = new DFSResult();
-            var visited = new HashSet<int>();
-            var time = 0;
+            var visited = new HashSet<int>(); // 用于跟踪已访问的顶点
+            var time = 0; // 用于记录发现和完成时间的时间戳
             
-            DFSRecursiveHelper(graph, startVertex, visited, result, ref time, -1);
+            DFSRecursiveHelper(graph, startVertex, visited, result, ref time, -1); // -1表示起始顶点没有父节点
             
             return result;
         }
         
+        /// <summary>
+        /// 递归DFS的辅助方法。
+        /// </summary>
         private static void DFSRecursiveHelper(Graph graph, int vertex, HashSet<int> visited, 
             DFSResult result, ref int time, int parent)
         {
-            // 标记为已访问
+            // 标记当前顶点为已访问，并记录发现时间
             visited.Add(vertex);
             result.VisitOrder.Add(vertex);
             result.DiscoveryTime[vertex] = ++time;
             result.Parent[vertex] = parent;
             
-            // 遍历所有邻接顶点
+            // 递归地访问所有未被访问的邻接顶点
             foreach (int neighbor in graph.GetNeighbors(vertex))
             {
                 if (!visited.Contains(neighbor))
@@ -129,12 +51,16 @@ namespace DFS
                 }
             }
             
+            // 当一个顶点的所有邻接顶点都被访问后，记录其完成时间
             result.FinishTime[vertex] = ++time;
         }
         
         /// <summary>
-        /// 迭代DFS遍历（使用栈）
+        /// 迭代方式的DFS遍历（使用栈）。
         /// </summary>
+        /// <param name="graph">要遍历的图。</param>
+        /// <param name="startVertex">遍历的起始顶点。</param>
+        /// <returns>DFS遍历的结果。</returns>
         public static DFSResult DFSIterative(Graph graph, int startVertex)
         {
             var result = new DFSResult();
@@ -152,7 +78,7 @@ namespace DFS
                     visited.Add(vertex);
                     result.VisitOrder.Add(vertex);
                     
-                    // 将邻接顶点压入栈（逆序以保持一致的遍历顺序）
+                    // 将邻接顶点逆序压入栈，以确保遍历顺序与递归版本一致
                     var neighbors = graph.GetNeighbors(vertex).Reverse();
                     foreach (int neighbor in neighbors)
                     {
@@ -168,16 +94,20 @@ namespace DFS
         }
         
         /// <summary>
-        /// 完整图的DFS遍历（处理非连通图）
+        /// 对整个图进行DFS遍历，可以处理非连通图。
         /// </summary>
+        /// <param name="graph">要遍历的图。</param>
+        /// <returns>完整的DFS遍历结果。</returns>
         public static DFSResult DFSComplete(Graph graph)
         {
             var result = new DFSResult();
             var visited = new HashSet<int>();
             var time = 0;
             
+            // 遍历图中的每一个顶点
             foreach (int vertex in graph.GetVertices())
             {
+                // 如果顶点未被访问，说明它属于一个新的连通分量
                 if (!visited.Contains(vertex))
                 {
                     result.ComponentCount++;
@@ -189,8 +119,12 @@ namespace DFS
         }
         
         /// <summary>
-        /// 路径查找DFS
+        /// 使用DFS查找从起点到终点的单条路径。
         /// </summary>
+        /// <param name="graph">要搜索的图。</param>
+        /// <param name="start">起始顶点。</param>
+        /// <param name="target">目标顶点。</param>
+        /// <returns>如果找到路径，则返回顶点列表；否则返回空列表。</returns>
         public static List<int> FindPath(Graph graph, int start, int target)
         {
             var visited = new HashSet<int>();
@@ -204,17 +138,22 @@ namespace DFS
             return new List<int>(); // 未找到路径
         }
         
+        /// <summary>
+        /// 查找路径的递归辅助方法。
+        /// </summary>
         private static bool FindPathHelper(Graph graph, int current, int target, 
             HashSet<int> visited, List<int> path)
         {
             visited.Add(current);
             path.Add(current);
             
+            // 如果当前顶点是目标，则成功找到路径
             if (current == target)
             {
-                return true; // 找到目标
+                return true;
             }
             
+            // 遍历邻接顶点，继续搜索
             foreach (int neighbor in graph.GetNeighbors(current))
             {
                 if (!visited.Contains(neighbor))
@@ -226,13 +165,18 @@ namespace DFS
                 }
             }
             
-            path.RemoveAt(path.Count - 1); // 回溯
+            // 如果从当前顶点出发的所有路径都无法到达目标，则回溯
+            path.RemoveAt(path.Count - 1);
             return false;
         }
         
         /// <summary>
-        /// 查找所有路径
+        /// 查找从起点到终点的所有可能路径。
         /// </summary>
+        /// <param name="graph">要搜索的图。</param>
+        /// <param name="start">起始顶点。</param>
+        /// <param name="target">目标顶点。</param>
+        /// <returns>一个包含所有路径的列表。</returns>
         public static List<List<int>> FindAllPaths(Graph graph, int start, int target)
         {
             var allPaths = new List<List<int>>();
@@ -244,6 +188,9 @@ namespace DFS
             return allPaths;
         }
         
+        /// <summary>
+        /// 查找所有路径的递归辅助方法。
+        /// </summary>
         private static void FindAllPathsHelper(Graph graph, int current, int target,
             HashSet<int> visited, List<int> currentPath, List<List<int>> allPaths)
         {
@@ -252,10 +199,12 @@ namespace DFS
             
             if (current == target)
             {
-                allPaths.Add(new List<int>(currentPath)); // 保存路径副本
+                // 找到一条路径，将其副本添加到结果列表中
+                allPaths.Add(new List<int>(currentPath));
             }
             else
             {
+                // 继续在邻接顶点中搜索
                 foreach (int neighbor in graph.GetNeighbors(current))
                 {
                     if (!visited.Contains(neighbor))
@@ -265,14 +214,16 @@ namespace DFS
                 }
             }
             
-            // 回溯
+            // 回溯，以便在其他分支中继续查找
             visited.Remove(current);
             currentPath.RemoveAt(currentPath.Count - 1);
         }
         
         /// <summary>
-        /// 检测无向图中的环
+        /// 检测无向图中是否存在环。
         /// </summary>
+        /// <param name="graph">要检查的无向图。</param>
+        /// <returns>如果存在环，则为true；否则为false。</returns>
         public static bool HasCycleUndirected(Graph graph)
         {
             var visited = new HashSet<int>();
@@ -281,6 +232,7 @@ namespace DFS
             {
                 if (!visited.Contains(vertex))
                 {
+                    // 对每个未访问的连通分量进行环检测
                     if (HasCycleUndirectedHelper(graph, vertex, -1, visited))
                     {
                         return true;
@@ -291,6 +243,9 @@ namespace DFS
             return false;
         }
         
+        /// <summary>
+        /// 无向图环检测的递归辅助方法。
+        /// </summary>
         private static bool HasCycleUndirectedHelper(Graph graph, int vertex, int parent, HashSet<int> visited)
         {
             visited.Add(vertex);
@@ -304,9 +259,10 @@ namespace DFS
                         return true;
                     }
                 }
+                // 如果邻接顶点已被访问，并且它不是当前顶点的父节点，则说明存在环
                 else if (neighbor != parent)
                 {
-                    return true; // 发现环
+                    return true;
                 }
             }
             
@@ -314,12 +270,14 @@ namespace DFS
         }
         
         /// <summary>
-        /// 检测有向图中的环
+        /// 检测有向图中是否存在环。
         /// </summary>
+        /// <param name="graph">要检查的有向图。</param>
+        /// <returns>如果存在环，则为true；否则为false。</returns>
         public static bool HasCycleDirected(Graph graph)
         {
-            var visited = new HashSet<int>();
-            var recStack = new HashSet<int>();
+            var visited = new HashSet<int>(); // 存储已访问过的顶点
+            var recStack = new HashSet<int>(); // 存储当前递归栈中的顶点
             
             foreach (int vertex in graph.GetVertices())
             {
@@ -335,11 +293,14 @@ namespace DFS
             return false;
         }
         
+        /// <summary>
+        /// 有向图环检测的递归辅助方法。
+        /// </summary>
         private static bool HasCycleDirectedHelper(Graph graph, int vertex, 
             HashSet<int> visited, HashSet<int> recStack)
         {
             visited.Add(vertex);
-            recStack.Add(vertex);
+            recStack.Add(vertex); // 将当前顶点加入递归栈
             
             foreach (int neighbor in graph.GetNeighbors(vertex))
             {
@@ -350,19 +311,23 @@ namespace DFS
                         return true;
                     }
                 }
+                // 如果邻接顶点在递归栈中，说明存在后向边，即有环
                 else if (recStack.Contains(neighbor))
                 {
-                    return true; // 发现后向边，存在环
+                    return true;
                 }
             }
             
-            recStack.Remove(vertex);
+            recStack.Remove(vertex); // 离开当前递归层，将顶点移出递归栈
             return false;
         }
         
         /// <summary>
-        /// 拓扑排序（基于DFS）
+        /// 对有向无环图（DAG）进行拓扑排序。
         /// </summary>
+        /// <param name="graph">要排序的有向图。</param>
+        /// <returns>一个包含拓扑排序后顶点的列表。</returns>
+        /// <exception cref="InvalidOperationException">如果图中存在环，则抛出异常。</exception>
         public static List<int> TopologicalSort(Graph graph)
         {
             if (HasCycleDirected(graph))
@@ -371,7 +336,7 @@ namespace DFS
             }
             
             var visited = new HashSet<int>();
-            var stack = new Stack<int>();
+            var stack = new Stack<int>(); // 用于存储拓扑排序的结果
             
             foreach (int vertex in graph.GetVertices())
             {
@@ -381,9 +346,12 @@ namespace DFS
                 }
             }
             
-            return stack.ToList();
+            return stack.ToList(); // 栈中顶点的顺序就是拓扑排序的结果
         }
         
+        /// <summary>
+        /// 拓扑排序的递归辅助方法。
+        /// </summary>
         private static void TopologicalSortHelper(Graph graph, int vertex, 
             HashSet<int> visited, Stack<int> stack)
         {
@@ -397,12 +365,15 @@ namespace DFS
                 }
             }
             
-            stack.Push(vertex); // 完成时间逆序
+            // 当一个顶点的所有后代都被访问后，将该顶点压入栈
+            stack.Push(vertex);
         }
         
         /// <summary>
-        /// 检查图的连通性
+        /// 检查图是否是连通的（仅适用于无向图）。
         /// </summary>
+        /// <param name="graph">要检查的图。</param>
+        /// <returns>如果图是连通的，则为true；否则为false。</returns>
         public static bool IsConnected(Graph graph)
         {
             if (graph.VertexCount == 0) return true;
@@ -410,13 +381,16 @@ namespace DFS
             var vertices = graph.GetVertices().ToList();
             if (vertices.Count == 0) return true;
             
+            // 从任意顶点开始DFS，如果能访问到所有顶点，则图是连通的
             var result = DFSRecursive(graph, vertices[0]);
             return result.VisitOrder.Count == graph.VertexCount;
         }
         
         /// <summary>
-        /// 获取连通分量
+        /// 获取图的所有连通分量（仅适用于无向图）。
         /// </summary>
+        /// <param name="graph">要分析的图。</param>
+        /// <returns>一个列表，其中每个子列表代表一个连通分量。</returns>
         public static List<List<int>> GetConnectedComponents(Graph graph)
         {
             var components = new List<List<int>>();
@@ -435,6 +409,9 @@ namespace DFS
             return components;
         }
         
+        /// <summary>
+        /// 获取连通分量的递归辅助方法。
+        /// </summary>
         private static void GetConnectedComponentHelper(Graph graph, int vertex, 
             HashSet<int> visited, List<int> component)
         {
@@ -450,120 +427,5 @@ namespace DFS
             }
         }
     }
-    
-    /// <summary>
-    /// 迷宫求解器（DFS应用示例）
-    /// </summary>
-    public class MazeSolver
-    {
-        private readonly int[,] _maze;
-        private readonly int _rows;
-        private readonly int _cols;
-        private readonly int[] _dx = { -1, 1, 0, 0 }; // 上下左右
-        private readonly int[] _dy = { 0, 0, -1, 1 };
-        
-        public MazeSolver(int[,] maze)
-        {
-            _maze = maze;
-            _rows = maze.GetLength(0);
-            _cols = maze.GetLength(1);
-        }
-        
-        /// <summary>
-        /// 求解迷宫路径
-        /// </summary>
-        public List<(int row, int col)> SolveMaze(int startRow, int startCol, int endRow, int endCol)
-        {
-            var visited = new bool[_rows, _cols];
-            var path = new List<(int, int)>();
-            
-            if (SolveMazeHelper(startRow, startCol, endRow, endCol, visited, path))
-            {
-                return path;
-            }
-            
-            return new List<(int, int)>(); // 无解
-        }
-        
-        private bool SolveMazeHelper(int row, int col, int endRow, int endCol, 
-            bool[,] visited, List<(int, int)> path)
-        {
-            // 检查边界和障碍物
-            if (row < 0 || row >= _rows || col < 0 || col >= _cols || 
-                _maze[row, col] == 1 || visited[row, col])
-            {
-                return false;
-            }
-            
-            visited[row, col] = true;
-            path.Add((row, col));
-            
-            // 到达终点
-            if (row == endRow && col == endCol)
-            {
-                return true;
-            }
-            
-            // 尝试四个方向
-            for (int i = 0; i < 4; i++)
-            {
-                int newRow = row + _dx[i];
-                int newCol = col + _dy[i];
-                
-                if (SolveMazeHelper(newRow, newCol, endRow, endCol, visited, path))
-                {
-                    return true;
-                }
-            }
-            
-            // 回溯
-            path.RemoveAt(path.Count - 1);
-            return false;
-        }
-        
-        /// <summary>
-        /// 查找迷宫中的所有路径
-        /// </summary>
-        public List<List<(int, int)>> FindAllPaths(int startRow, int startCol, int endRow, int endCol)
-        {
-            var allPaths = new List<List<(int, int)>>();
-            var visited = new bool[_rows, _cols];
-            var currentPath = new List<(int, int)>();
-            
-            FindAllPathsHelper(startRow, startCol, endRow, endCol, visited, currentPath, allPaths);
-            
-            return allPaths;
-        }
-        
-        private void FindAllPathsHelper(int row, int col, int endRow, int endCol,
-            bool[,] visited, List<(int, int)> currentPath, List<List<(int, int)>> allPaths)
-        {
-            if (row < 0 || row >= _rows || col < 0 || col >= _cols || 
-                _maze[row, col] == 1 || visited[row, col])
-            {
-                return;
-            }
-            
-            visited[row, col] = true;
-            currentPath.Add((row, col));
-            
-            if (row == endRow && col == endCol)
-            {
-                allPaths.Add(new List<(int, int)>(currentPath));
-            }
-            else
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    int newRow = row + _dx[i];
-                    int newCol = col + _dy[i];
-                    FindAllPathsHelper(newRow, newCol, endRow, endCol, visited, currentPath, allPaths);
-                }
-            }
-            
-            // 回溯
-            visited[row, col] = false;
-            currentPath.RemoveAt(currentPath.Count - 1);
-        }
-    }
+
 }
