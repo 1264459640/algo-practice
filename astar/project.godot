@@ -10,11 +10,11 @@ config_version=5
 
 [application]
 
-config/name="FloodFill Algorithm Demo"
-run/main_scene="res://FloodFillTestScene.tscn"
-config/features=PackedStringArray("4.5", "C#", "Forward Plus")
+config/name="A* 寻路算法演示"
+run/main_scene="res://AStarTestScene.tscn"
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [dotnet]
 
-project/assembly_name="FloodFill"
+project/assembly_name="AStar"

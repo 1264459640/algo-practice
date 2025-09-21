@@ -1,0 +1,174 @@
+[gd_scene load_steps=2 format=3 uid="uid://bq8xkxqhqvhxk"]
+
+[ext_resource type="Script" path="res://src/AStarTestScene.cs" id="1_0k8vj"]
+
+[node name="AStarTestScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0k8vj")
+
+[node name="MainContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="MainContainer"]
+layout_mode = 2
+text = "A* 寻路算法演示"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+
+[node name="ButtonContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CreateGridButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "创建网格"
+
+[node name="FindPathButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "寻找路径"
+
+[node name="CompareHeuristicsButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "比较启发式"
+
+[node name="GenerateObstaclesButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "生成障碍物"
+
+[node name="GenerateMazeButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "生成迷宫"
+
+[node name="ResetButton" type="Button" parent="MainContainer/ButtonContainer"]
+layout_mode = 2
+text = "重置"
+
+[node name="ControlsContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="HeuristicContainer" type="VBoxContainer" parent="MainContainer/ControlsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="HeuristicLabel" type="Label" parent="MainContainer/ControlsContainer/HeuristicContainer"]
+layout_mode = 2
+text = "启发式函数:"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="HeuristicOption" type="OptionButton" parent="MainContainer/ControlsContainer/HeuristicContainer"]
+layout_mode = 2
+
+[node name="DiagonalContainer" type="VBoxContainer" parent="MainContainer/ControlsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="DiagonalLabel" type="Label" parent="MainContainer/ControlsContainer/DiagonalContainer"]
+layout_mode = 2
+text = "对角移动:"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="DiagonalCheckBox" type="CheckBox" parent="MainContainer/ControlsContainer/DiagonalContainer"]
+layout_mode = 2
+text = "允许对角移动"
+
+[node name="GridSizeContainer" type="VBoxContainer" parent="MainContainer/ControlsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="GridSizeLabel" type="Label" parent="MainContainer/ControlsContainer/GridSizeContainer"]
+layout_mode = 2
+text = "网格大小:"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="GridSizeSpinBox" type="SpinBox" parent="MainContainer/ControlsContainer/GridSizeContainer"]
+layout_mode = 2
+min_value = 5.0
+max_value = 20.0
+value = 10.0
+
+[node name="ContentContainer" type="HBoxContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="LeftPanel" type="VBoxContainer" parent="MainContainer/ContentContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="GridLabel" type="Label" parent="MainContainer/ContentContainer/LeftPanel"]
+layout_mode = 2
+text = "A* 寻路网格:"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="GridContainer" type="GridContainer" parent="MainContainer/ContentContainer/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 1
+columns = 10
+
+[node name="LegendContainer" type="VBoxContainer" parent="MainContainer/ContentContainer/LeftPanel"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="LegendLabel" type="Label" parent="MainContainer/ContentContainer/LeftPanel/LegendContainer"]
+layout_mode = 2
+text = "图例:"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="LegendText" type="RichTextLabel" parent="MainContainer/ContentContainer/LeftPanel/LegendContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 120)
+bbcode_enabled = true
+text = "[color=green]●[/color] 起点  [color=red]●[/color] 终点  [color=black]■[/color] 障碍物
+[color=lightblue]●[/color] 开放列表  [color=gray]●[/color] 关闭列表
+[color=yellow]●[/color] 路径  [color=white]□[/color] 空地"
+
+[node name="RightPanel" type="VBoxContainer" parent="MainContainer/ContentContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ResultLabel" type="Label" parent="MainContainer/ContentContainer/RightPanel"]
+layout_mode = 2
+text = "算法执行结果:"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="ResultDisplay" type="RichTextLabel" parent="MainContainer/ContentContainer/RightPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "结果将在这里显示..."
+
+[node name="HelpLabel" type="Label" parent="MainContainer"]
+layout_mode = 2
+text = "操作: 左键设置起点 | 右键设置终点 | 中键设置障碍物 | 快捷键: 1-创建网格 | 2-寻路 | 3-比较启发式 | R-重置"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 12

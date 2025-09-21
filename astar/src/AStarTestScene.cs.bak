@@ -1,0 +1,553 @@
+using Godot;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using AStar;
+
+/// <summary>
+/// A*算法测试场景
+/// 提供可视化的A*寻路演示
+/// </summary>
+public partial class AStarTestScene : Control
+{
+    // UI控件引用
+    private VBoxContainer _mainContainer;
+    private Label _titleLabel;
+    private HBoxContainer _buttonContainer;
+    private Button _createGridButton;
+    private Button _findPathButton;
+    private Button _compareHeuristicsButton;
+    private Button _generateObstaclesButton;
+    private Button _generateMazeButton;
+    private Button _resetButton;
+    
+    // 控制面板
+    private OptionButton _heuristicOption;
+    private CheckBox _diagonalCheckBox;
+    private SpinBox _gridSizeSpinBox;
+    
+    // 显示区域
+    private GridContainer _gridContainer;
+    private RichTextLabel _resultDisplay;
+    private RichTextLabel _legendText;
+    
+    // 数据
+    private Grid _currentGrid;
+    private AStar.Node _startNode;
+    private AStar.Node _endNode;
+    private List<AStar.Node> _currentPath;
+    private List<AStar.Node> _openList;
+    private List<AStar.Node> _closedList;
+    private readonly Random _random = new Random();
+    
+    // 网格按钮数组
+    private Button[,] _gridButtons;
+    
+    public override void _Ready()
+    {
+        GetUIReferences();
+        InitializeControls();
+        ConnectSignals();
+        InitializeData();
+        UpdateDisplay();
+    }
+    
+    /// <summary>
+    /// 获取UI节点引用
+    /// </summary>
+    private void GetUIReferences()
+    {
+        _mainContainer = GetNode<VBoxContainer>("MainContainer");
+        _titleLabel = GetNode<Label>("MainContainer/TitleLabel");
+        _buttonContainer = GetNode<HBoxContainer>("MainContainer/ButtonContainer");
+        _createGridButton = GetNode<Button>("MainContainer/ButtonContainer/CreateGridButton");
+        _findPathButton = GetNode<Button>("MainContainer/ButtonContainer/FindPathButton");
+        _compareHeuristicsButton = GetNode<Button>("MainContainer/ButtonContainer/CompareHeuristicsButton");
+        _generateObstaclesButton = GetNode<Button>("MainContainer/ButtonContainer/GenerateObstaclesButton");
+        _generateMazeButton = GetNode<Button>("MainContainer/ButtonContainer/GenerateMazeButton");
+        _resetButton = GetNode<Button>("MainContainer/ButtonContainer/ResetButton");
+        
+        _heuristicOption = GetNode<OptionButton>("MainContainer/ControlsContainer/HeuristicContainer/HeuristicOption");
+        _diagonalCheckBox = GetNode<CheckBox>("MainContainer/ControlsContainer/DiagonalContainer/DiagonalCheckBox");
+        _gridSizeSpinBox = GetNode<SpinBox>("MainContainer/ControlsContainer/GridSizeContainer/GridSizeSpinBox");
+        
+        _gridContainer = GetNode<GridContainer>("MainContainer/ContentContainer/LeftPanel/GridContainer");
+        _resultDisplay = GetNode<RichTextLabel>("MainContainer/ContentContainer/RightPanel/ResultDisplay");
+        _legendText = GetNode<RichTextLabel>("MainContainer/ContentContainer/LeftPanel/LegendContainer/LegendText");
+    }
+    
+    /// <summary>
+    /// 初始化控件
+    /// </summary>
+    private void InitializeControls()
+    {
+        // 初始化启发式函数选项
+        _heuristicOption.AddItem("曼哈顿距离", (int)HeuristicType.Manhattan);
+        _heuristicOption.AddItem("欧几里得距离", (int)HeuristicType.Euclidean);
+        _heuristicOption.AddItem("对角距离", (int)HeuristicType.Diagonal);
+        _heuristicOption.Selected = 0;
+        
+        // 设置默认值
+        _diagonalCheckBox.ButtonPressed = false;
+        _gridSizeSpinBox.Value = 10;
+    }
+    
+    /// <summary>
+    /// 连接信号
+    /// </summary>
+    private void ConnectSignals()
+    {
+        _createGridButton.Pressed += OnCreateGridPressed;
+        _findPathButton.Pressed += OnFindPathPressed;
+        _compareHeuristicsButton.Pressed += OnCompareHeuristicsPressed;
+        _generateObstaclesButton.Pressed += OnGenerateObstaclesPressed;
+        _generateMazeButton.Pressed += OnGenerateMazePressed;
+        _resetButton.Pressed += OnResetPressed;
+        
+        _gridSizeSpinBox.ValueChanged += OnGridSizeChanged;
+    }
+    
+    /// <summary>
+    /// 初始化数据
+    /// </summary>
+    private void InitializeData()
+    {
+        CreateGrid();
+    }
+    
+    /// <summary>
+    /// 创建网格
+    /// </summary>
+    private void CreateGrid()
+    {
+        int size = (int)_gridSizeSpinBox.Value;
+        _currentGrid = new Grid(size, size);
+        
+        // 设置默认起点和终点
+        _startNode = _currentGrid.GetNode(0, 0);
+        _endNode = _currentGrid.GetNode(size - 1, size - 1);
+        
+        _currentPath = new List<AStar.Node>();
+        _openList = new List<AStar.Node>();
+        _closedList = new List<AStar.Node>();
+        
+        CreateGridButtons();
+    }
+    
+    /// <summary>
+    /// 创建网格按钮
+    /// </summary>
+    private void CreateGridButtons()
+    {
+        // 清除现有按钮
+        foreach (Godot.Node child in _gridContainer.GetChildren())
+        {
+            child.QueueFree();
+        }
+        
+        int size = (int)_gridSizeSpinBox.Value;
+        _gridContainer.Columns = size;
+        _gridButtons = new Button[size, size];
+        
+        for (int row = 0; row < size; row++)
+        {
+            for (int col = 0; col < size; col++)
+            {
+                var button = new Button();
+                button.Text = "";
+                button.CustomMinimumSize = new Vector2(30, 30);
+                
+                // 保存坐标信息
+                button.SetMeta("row", row);
+                button.SetMeta("col", col);
+                
+                // 连接点击事件
+                button.GuiInput += (InputEvent @event) => OnGridButtonInput(@event, button);
+                
+                _gridContainer.AddChild(button);
+                _gridButtons[row, col] = button;
+            }
+        }
+        
+        UpdateGridDisplay();
+    }
+    
+    /// <summary>
+    /// 处理网格按钮输入
+    /// </summary>
+    private void OnGridButtonInput(InputEvent @event, Button button)
+    {
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
+        {
+            int row = button.GetMeta("row").AsInt32();
+            int col = button.GetMeta("col").AsInt32();
+            var node = _currentGrid.GetNode(row, col);
+            
+            switch (mouseEvent.ButtonIndex)
+            {
+                case MouseButton.Left:
+                    // 设置起点
+                    if (_startNode != null)
+                    {
+                        _startNode.IsStart = false;
+                    }
+                    _startNode = node;
+                    _startNode.IsStart = true;
+                    _startNode.IsObstacle = false;
+                    break;
+                    
+                case MouseButton.Right:
+                    // 设置终点
+                    if (_endNode != null)
+                    {
+                        _endNode.IsEnd = false;
+                    }
+                    _endNode = node;
+                    _endNode.IsEnd = true;
+                    _endNode.IsObstacle = false;
+                    break;
+                    
+                case MouseButton.Middle:
+                    // 切换障碍物
+                    if (node != _startNode && node != _endNode)
+                    {
+                        node.IsObstacle = !node.IsObstacle;
+                    }
+                    break;
+            }
+            
+            UpdateGridDisplay();
+        }
+    }
+    
+    /// <summary>
+    /// 更新网格显示
+    /// </summary>
+    private void UpdateGridDisplay()
+    {
+        int size = (int)_gridSizeSpinBox.Value;
+        
+        for (int row = 0; row < size; row++)
+        {
+            for (int col = 0; col < size; col++)
+            {
+                var button = _gridButtons[row, col];
+                var node = _currentGrid.GetNode(row, col);
+                var styleBox = new StyleBoxFlat();
+                
+                // 根据节点状态设置颜色和文本
+                if (node.IsStart)
+                {
+                    styleBox.BgColor = Colors.Green;
+                    button.AddThemeColorOverride("font_color", Colors.White);
+                    button.Text = "S";
+                }
+                else if (node.IsEnd)
+                {
+                    styleBox.BgColor = Colors.Red;
+                    button.AddThemeColorOverride("font_color", Colors.White);
+                    button.Text = "E";
+                }
+                else if (node.IsObstacle)
+                {
+                    styleBox.BgColor = Colors.Black;
+                    button.AddThemeColorOverride("font_color", Colors.White);
+                    button.Text = "■";
+                }
+                else if (_currentPath.Contains(node))
+                {
+                    styleBox.BgColor = Colors.Yellow;
+                    button.AddThemeColorOverride("font_color", Colors.Black);
+                    button.Text = "●";
+                }
+                else if (_closedList.Contains(node))
+                {
+                    styleBox.BgColor = Colors.Gray;
+                    button.AddThemeColorOverride("font_color", Colors.White);
+                    button.Text = "●";
+                }
+                else if (_openList.Contains(node))
+                {
+                    styleBox.BgColor = Colors.LightBlue;
+                    button.AddThemeColorOverride("font_color", Colors.Black);
+                    button.Text = "●";
+                }
+                else
+                {
+                    styleBox.BgColor = Colors.White;
+                    button.AddThemeColorOverride("font_color", Colors.Black);
+                    button.Text = "";
+                }
+                
+                button.AddThemeStyleboxOverride("normal", styleBox);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 更新显示
+    /// </summary>
+    private void UpdateDisplay()
+    {
+        UpdateGridDisplay();
+        _resultDisplay.Text = "[color=green]A*寻路算法演示就绪[/color]\n\n" +
+                             "操作说明:\n" +
+                             "• 左键点击设置起点\n" +
+                             "• 右键点击设置终点\n" +
+                             "• 中键点击切换障碍物\n\n" +
+                             "点击按钮开始测试各种A*功能。";
+    }
+    
+    /// <summary>
+    /// 创建网格按钮点击事件
+    /// </summary>
+    private void OnCreateGridPressed()
+    {
+        CreateGrid();
+        UpdateDisplay();
+        
+        _resultDisplay.Text = "[color=green]已创建新的网格[/color]\n\n" +
+                             $"网格大小: {_currentGrid.Width}x{_currentGrid.Height}\n" +
+                             $"起点: ({_startNode.X}, {_startNode.Y})\n" +
+                             $"终点: ({_endNode.X}, {_endNode.Y})";
+        
+        GD.Print($"创建了新网格: {_currentGrid.Width}x{_currentGrid.Height}");
+    }
+    
+    /// <summary>
+    /// 寻找路径按钮点击事件
+    /// </summary>
+    private void OnFindPathPressed()
+    {
+        if (_startNode == null || _endNode == null)
+        {
+            _resultDisplay.Text = "[color=red]错误: 请先设置起点和终点[/color]";
+            return;
+        }
+        
+        // 重置网格状态
+        _currentGrid.ResetNodes();
+        _currentPath.Clear();
+        _openList.Clear();
+        _closedList.Clear();
+        
+        // 获取当前设置
+        var heuristicType = (HeuristicType)_heuristicOption.GetSelectedId();
+        bool allowDiagonal = _diagonalCheckBox.ButtonPressed;
+        
+        // 执行A*算法
+        var result = AStarPathfinder.FindPath(_currentGrid, _startNode, _endNode, heuristicType, allowDiagonal);
+        
+        var display = "[b]A*寻路结果:[/b]\n\n";
+        
+        if (result.PathFound)
+        {
+            _currentPath = result.Path;
+            display += $"[color=green]找到路径![/color]\n";
+            display += $"路径长度: {result.Path.Count}步\n";
+            display += $"路径代价: {result.PathCost:F2}\n";
+            display += $"执行时间: {result.ExecutionTimeMs:F2}ms\n";
+            display += $"访问节点: {result.NodesVisited}\n";
+            display += $"搜索效率: {result.CalculateSearchEfficiency():F2}%\n\n";
+            
+            display += $"[color=blue]算法参数:[/color]\n";
+            display += $"启发式函数: {GetHeuristicName(heuristicType)}\n";
+            display += $"对角移动: {(allowDiagonal ? "允许" : "禁止")}\n\n";
+            
+            // 显示路径坐标（前10个点）
+            display += "[color=blue]路径坐标:[/color]\n";
+            for (int i = 0; i < Math.Min(result.Path.Count, 10); i++)
+            {
+                var node = result.Path[i];
+                display += $"({node.X},{node.Y})";
+                if (i < Math.Min(result.Path.Count, 10) - 1) display += " → ";
+            }
+            if (result.Path.Count > 10) display += " ...";
+        }
+        else
+        {
+            display += "[color=red]未找到路径![/color]\n";
+            display += $"执行时间: {result.ExecutionTimeMs:F2}ms\n";
+            display += $"访问节点数: {result.NodesVisited}\n";
+            display += "可能原因: 起点和终点之间被障碍物完全阻隔。";
+        }
+        
+        _resultDisplay.Text = display;
+        UpdateGridDisplay();
+        
+        GD.Print($"A*寻路完成: {(result.PathFound ? "找到路径" : "未找到路径")}, " +
+                $"访问{result.NodesVisited}个节点");
+    }
+    
+    /// <summary>
+    /// 比较启发式函数按钮点击事件
+    /// </summary>
+    private void OnCompareHeuristicsPressed()
+    {
+        if (_startNode == null || _endNode == null)
+        {
+            _resultDisplay.Text = "[color=red]错误: 请先设置起点和终点[/color]";
+            return;
+        }
+        
+        bool allowDiagonal = _diagonalCheckBox.ButtonPressed;
+        var results = new List<AStarResult>();
+        var heuristicTypes = new[] { HeuristicType.Manhattan, HeuristicType.Euclidean, HeuristicType.Diagonal };
+        
+        foreach (var heuristicType in heuristicTypes)
+        {
+            _currentGrid.ResetNodes();
+            var result = AStarPathfinder.FindPath(_currentGrid, _startNode, _endNode, heuristicType, allowDiagonal);
+            results.Add(result);
+        }
+        
+        var display = "[b]启发式函数比较结果:[/b]\n\n";
+        
+        for (int i = 0; i < results.Count; i++)
+        {
+            var result = results[i];
+            var heuristicName = GetHeuristicName(heuristicTypes[i]);
+            
+            display += $"[color=blue]{heuristicName}:[/color]\n";
+            if (result.PathFound)
+            {
+                display += $"  路径长度: {result.Path.Count}步\n";
+                display += $"  路径代价: {result.PathCost:F2}\n";
+                display += $"  执行时间: {result.ExecutionTimeMs:F2}ms\n";
+                display += $"  访问节点: {result.NodesVisited}\n";
+                display += $"  搜索效率: {result.CalculateSearchEfficiency():F2}%\n";
+            }
+            else
+            {
+                display += "  [color=red]未找到路径[/color]\n";
+            }
+            display += "\n";
+        }
+        
+        // 找出最优结果
+        var validResults = results.Where(r => r.PathFound).ToList();
+        if (validResults.Count > 0)
+        {
+            var fastest = validResults.OrderBy(r => r.ExecutionTimeMs).First();
+            var mostEfficient = validResults.OrderByDescending(r => r.CalculateSearchEfficiency()).First();
+            var shortestPath = validResults.OrderBy(r => r.Path.Count).First();
+            
+            display += "[color=green]性能分析:[/color]\n";
+            display += $"最快执行: {GetHeuristicName(heuristicTypes[validResults.IndexOf(fastest)])} ({fastest.ExecutionTimeMs:F2}ms)\n";
+            display += $"最高效率: {GetHeuristicName(heuristicTypes[validResults.IndexOf(mostEfficient)])} ({mostEfficient.CalculateSearchEfficiency():F2}%)\n";
+            display += $"最短路径: {GetHeuristicName(heuristicTypes[validResults.IndexOf(shortestPath)])} ({shortestPath.Path.Count}步)\n";
+        }
+        
+        _resultDisplay.Text = display;
+        
+        GD.Print($"启发式函数比较完成: 测试了{results.Count}种函数");
+    }
+    
+    /// <summary>
+    /// 生成障碍物按钮点击事件
+    /// </summary>
+    private void OnGenerateObstaclesPressed()
+    {
+        _currentGrid.GenerateRandomObstacles(0.3f); // 30%的障碍物密度
+        
+        // 确保起点和终点不是障碍物
+        if (_startNode != null) _startNode.IsObstacle = false;
+        if (_endNode != null) _endNode.IsObstacle = false;
+        
+        UpdateGridDisplay();
+        
+        _resultDisplay.Text = "[color=green]已生成随机障碍物[/color]\n\n" +
+                             "障碍物密度: 30%\n" +
+                             "起点和终点已自动保持畅通。";
+        
+        GD.Print("生成了随机障碍物");
+    }
+    
+    /// <summary>
+    /// 生成迷宫按钮点击事件
+    /// </summary>
+    private void OnGenerateMazePressed()
+    {
+        _currentGrid.GenerateMaze();
+        
+        // 确保起点和终点不是障碍物
+        if (_startNode != null) _startNode.IsObstacle = false;
+        if (_endNode != null) _endNode.IsObstacle = false;
+        
+        UpdateGridDisplay();
+        
+        _resultDisplay.Text = "[color=green]已生成迷宫[/color]\n\n" +
+                             "使用递归回溯算法生成迷宫。\n" +
+                             "起点和终点已自动保持畅通。";
+        
+        GD.Print("生成了迷宫");
+    }
+    
+    /// <summary>
+    /// 重置按钮点击事件
+    /// </summary>
+    private void OnResetPressed()
+    {
+        CreateGrid();
+        UpdateDisplay();
+        
+        GD.Print("已重置到初始状态");
+    }
+    
+    /// <summary>
+    /// 网格大小改变事件
+    /// </summary>
+    private void OnGridSizeChanged(double value)
+    {
+        CreateGrid();
+        UpdateDisplay();
+    }
+    
+    /// <summary>
+    /// 获取启发式函数名称
+    /// </summary>
+    private string GetHeuristicName(HeuristicType type)
+    {
+        return type switch
+        {
+            HeuristicType.Manhattan => "曼哈顿距离",
+            HeuristicType.Euclidean => "欧几里得距离",
+            HeuristicType.Diagonal => "对角距离",
+            _ => "未知"
+        };
+    }
+    
+    /// <summary>
+    /// 处理输入事件（键盘快捷键）
+    /// </summary>
+    public override void _Input(InputEvent @event)
+    {
+        if (@event is InputEventKey keyEvent && keyEvent.Pressed)
+        {
+            switch (keyEvent.Keycode)
+            {
+                case Key.Key1:
+                    OnCreateGridPressed();
+                    break;
+                case Key.Key2:
+                    OnFindPathPressed();
+                    break;
+                case Key.Key3:
+                    OnCompareHeuristicsPressed();
+                    break;
+                case Key.Key4:
+                    OnGenerateObstaclesPressed();
+                    break;
+                case Key.Key5:
+                    OnGenerateMazePressed();
+                    break;
+                case Key.R:
+                    OnResetPressed();
+                    break;
+                case Key.Escape:
+                    GetTree().Quit();
+                    break;
+            }
+        }
+    }
+}
